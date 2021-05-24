@@ -16,9 +16,19 @@ object AkFeedCmd : CompositeCommand(
 
     @SubCommand
     suspend fun UserCommandSender.list() {
-        val msg = StringBuilder("已开启推送消息源：")
+        val enabledSource = mutableSetOf<FeedSource>()
         AkFeedConfig.groupPref[this.getGroupOrNull()?.id]
-            ?.forEach { msg.append("\n" + it.displayName) }
+            ?.forEach { enabledSource.add(it) }
+
+        val disabledSource = enumValues<FeedSource>()
+            .filter { !enabledSource.contains(it) }
+
+        val msg = StringBuilder("已开启推送消息源：")
+        msg.append(enabledSource.map { it.displayName }.joinToString(separator = "\n", prefix = "\n"))
+
+        msg.append("\n\n未开启消息源：")
+        msg.append(disabledSource.map { it.displayName }.joinToString(separator = "\n", prefix = "\n"))
+
         this.sendMessage(msg.toString())
     }
 }
